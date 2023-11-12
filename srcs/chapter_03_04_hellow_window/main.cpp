@@ -2,6 +2,12 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
+void processInput(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+}
+
 int main() {
     if(!glfwInit()){
         std::cout << "Failed to initialize GLFW" << std::endl;
@@ -27,8 +33,12 @@ int main() {
     }
 
     glViewport(0, 0, 800, 600);
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 
     while (!glfwWindowShouldClose(window)) {
+        processInput(window);
+    
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
