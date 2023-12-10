@@ -1,5 +1,5 @@
 # Shaders
-We can a triangle with interpolated colors between vertices.
+We can draw a triangle with interpolated colors between vertices.
 
 ```bash
 cd interpolation
