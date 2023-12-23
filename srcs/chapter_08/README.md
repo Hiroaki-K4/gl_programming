@@ -1,4 +1,4 @@
-# transformations
+# Transformations
 We can transform a texture.
 
 ```bash
