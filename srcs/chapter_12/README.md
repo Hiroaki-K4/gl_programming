@@ -1,22 +1,10 @@
-# Camera
-We can change camera position.
+# Colors
+We can a e light source cube.
 
 ```bash
-cd camera
+cd colors
 make
-./camera
+./colors
 ```
-
-<img src='images/camera_move.gif' width='600'>
 
 <br></br>
-
-We can walk around cubes.
-
-```bash
-cd walk_around
-make
-./walk_around
-```
-
-<img src='images/walk_around.gif' width='600'>
