@@ -1,5 +1,5 @@
 # Colors
-We can a e light source cube.
+We can create a light source cube.
 
 ```bash
 cd colors
