@@ -18,3 +18,13 @@ make
 ```
 
 <br></br>
+
+We can try the specular lighting.
+
+```bash
+cd specular
+make
+./specular
+```
+
+<img src='images/specular.png' width='600'>
