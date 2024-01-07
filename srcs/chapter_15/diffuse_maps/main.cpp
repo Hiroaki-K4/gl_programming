@@ -96,6 +96,40 @@ void scroll_callback(GLFWwindow *window, double xoffset, double yoffset) {
     }
 }
 
+unsigned int loadTexture(char const * path) {
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data) {
+        GLenum format;
+        if (nrComponents == 1) {
+            format = GL_RED;
+        } else if (nrComponents == 3) {
+            format = GL_RGB;
+        } else if (nrComponents == 4) {
+            format = GL_RGBA;
+        }
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    } else {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
+}
+
 int main() {
     if(!glfwInit()){
         std::cout << "Failed to initialize GLFW" << std::endl;
@@ -187,11 +221,14 @@ int main() {
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
     // Normal attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+    // Texture coordinate attribute
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     // Second, configure the light's VAO
     unsigned int lightCubeVAO;
@@ -201,12 +238,15 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
 
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+    // Load texture
+    unsigned int diffuseMap = loadTexture("../../../resources/textures/container.jpg");
 
     // Render loop
     while (!glfwWindowShouldClose(window)) {
@@ -220,22 +260,14 @@ int main() {
 
         // Be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
-        glm::vec3 lightColor;
-        lightColor.x = sin(glfwGetTime() * 2.0f);
-        lightColor.y = sin(glfwGetTime() * 0.7f);
-        lightColor.z = sin(glfwGetTime() * 1.3f);
-        
-        glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-        glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
-        
+        lightingShader.setInt("material.diffuse", 0);
         lightingShader.setVec3("lightPos", lightPos[0], lightPos[1], lightPos[2]);
         lightingShader.setVec3("viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
-        lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
         lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
         lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
         lightingShader.setFloat("material.shininess", 32.0f);
-        lightingShader.setVec3("light.ambient", ambientColor[0], ambientColor[1], ambientColor[2]);
-        lightingShader.setVec3("light.diffuse", diffuseColor[0], diffuseColor[1], diffuseColor[2]);
+        lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+        lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
         lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
         // view/projecion transformations
@@ -248,6 +280,10 @@ int main() {
         glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+
+        // Bind diffuse map
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, diffuseMap);
 
         // Render the cube
         glBindVertexArray(cubeVAO);
