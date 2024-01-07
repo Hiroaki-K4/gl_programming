@@ -247,6 +247,7 @@ int main() {
 
     // Load texture
     unsigned int diffuseMap = loadTexture("../../../resources/textures/container2.png");
+    unsigned int specularMap = loadTexture("../../../resources/textures/container2_specular.png");
 
     // Render loop
     while (!glfwWindowShouldClose(window)) {
@@ -261,6 +262,7 @@ int main() {
         // Be sure to activate shader when setting uniforms/drawing objects
         lightingShader.use();
         lightingShader.setInt("material.diffuse", 0);
+        lightingShader.setInt("material.specular", 1);
         lightingShader.setVec3("lightPos", lightPos[0], lightPos[1], lightPos[2]);
         lightingShader.setVec3("viewPos", cameraPos[0], cameraPos[1], cameraPos[2]);
         lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
@@ -284,6 +286,8 @@ int main() {
         // Bind diffuse map
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, diffuseMap);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, specularMap);
 
         // Render the cube
         glBindVertexArray(cubeVAO);

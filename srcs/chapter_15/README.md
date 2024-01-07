@@ -1,10 +1,20 @@
-# Materials
-We can try the lighting with various materials.
+# Lighting Maps
+We can try the diffuse maps.
 
 ```bash
-cd materials
+cd diffuse_maps
 make
-./materials
+./diffuse_maps
 ```
 
-<img src='images/materials.gif' width='600'>
+<br></br>
+
+We can try the specular maps.
+
+```bash
+cd specular_maps
+make
+./specular_maps
+```
+
+<img src='images/specular_maps.png' width='600'>
