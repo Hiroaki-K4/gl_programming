@@ -1,20 +1,20 @@
-# Lighting Maps
-We can try the diffuse maps.
+# Light casters
+We can try the directional light.
 
 ```bash
-cd diffuse_maps
+cd directional_light
 make
-./diffuse_maps
+./directional_light
 ```
 
 <br></br>
 
-We can try the specular maps.
+We can try the spot light.
 
 ```bash
-cd specular_maps
+cd flash_light
 make
-./specular_maps
+./flash_light
 ```
 
-<img src='images/specular_maps.png' width='600'>
+<img src='images/flash_light.gif' width='600'>
