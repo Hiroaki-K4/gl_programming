@@ -2,4 +2,3 @@
 logs/
 srcs/*/logs/
 srcs/**/*/logs/
-assimp/
