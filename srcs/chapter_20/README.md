@@ -1,10 +1,10 @@
-# Multiple lights
-We can create multiple lights.
+#  Model Loading
+We can create model loader.
 
 ```bash
-cd multiple_lights
+cd model
 make
-./multiple_lights
+./model
 ```
 
-<img src='images/multiple_lights.gif' width='600'>
+<img src='images/backpack.gif' width='600'>
