@@ -3,13 +3,16 @@
 
 #include <iostream>
 #include <vector>
-#include <ai.h>
+// #include <ai.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
 #include "Mesh.hpp"
 #include "Shader.h"
+
+// #define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 
 class Model {
@@ -29,5 +32,7 @@ class Model {
         std::vector<Texture> loadMaterialTextures(
             aiMaterial *mat, aiTextureType type, std::string typeName);
 };
+
+unsigned int TextureFromFile(const char *path, const std::string &directory, bool gamma = false);
 
 #endif

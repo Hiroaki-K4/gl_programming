@@ -6,6 +6,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
 
 #include "Shader.h"
 
@@ -19,6 +22,7 @@ struct Vertex {
 struct Texture {
     unsigned int id;
     std::string type;
+    aiString path;
 };
 
 class Mesh {
