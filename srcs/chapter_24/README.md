@@ -1,10 +1,22 @@
-# Depth testing
-We can try depth testing.
+# Blending
+We can try blending.
 
 ```bash
-cd depth_testing
+cd blending
 make
-./depth_testing
+./blending
 ```
 
-<img src='images/depth_testing.gif' width='600'>
+<img src='images/blending.gif' width='600'>
+
+<br></br>
+
+We can render semi-transparent textures.
+
+```bash
+cd transparent
+make
+./transparent
+```
+
+<img src='images/transparent.gif' width='600'>
