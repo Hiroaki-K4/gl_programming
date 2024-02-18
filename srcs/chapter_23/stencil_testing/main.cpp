@@ -156,7 +156,8 @@ int main() {
     }
 
     // Build and compile our shader program
-    Shader shader("depth_testing.vs", "depth_testing.fs");
+    Shader shader("stencil_testing.vs", "stencil_testing.fs");
+    Shader shaderSingleColor("stencil_testing.vs", "stencil_single_color.fs");
 
     float cubeVertices[] = {
         // positions          // texture Coords
@@ -244,7 +245,10 @@ int main() {
 
 
     glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
     glEnable(GL_STENCIL_TEST);
+    glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+    glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Load texture
@@ -272,26 +276,68 @@ int main() {
         unsigned int projLoc = glGetUniformLocation(shader.ID, "projection");
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
         glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+
+        shaderSingleColor.use();
+        unsigned int viewLocSingleColor = glGetUniformLocation(shaderSingleColor.ID, "view");
+        unsigned int projLocSingleColor = glGetUniformLocation(shaderSingleColor.ID, "projection");
+        glUniformMatrix4fv(viewLocSingleColor, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(projLocSingleColor, 1, GL_FALSE, &projection[0][0]);
+
+        shader.use();
+        // draw floor as normal, but don't write the floor to the stencil buffer,
+        // we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
+        glStencilMask(0x00);
+        // floor
+        glBindVertexArray(planeVAO);
+        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        model = glm::mat4(1.0f);
+        unsigned int modeLoc = glGetUniformLocation(shader.ID, "model");
+        glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        // 1st. render pass, draw objects as normal, writing to the stencil buffer
+        glStencilFunc(GL_ALWAYS, 1, 0xFF);
+        glStencilMask(0xFF);
         // cubes
         glBindVertexArray(cubeVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, cubeTexture);
         model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        unsigned int modeLoc = glGetUniformLocation(shader.ID, "model");
         glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         model = glm::mat4(1.0f);
         model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
         glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
         glDrawArrays(GL_TRIANGLES, 0, 36);
-        // floor
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
+
+        // 2nd. render pass: now draw slightly scaled versions of the object, this time disabling stencil writing.
+        // Because the stencil buffer is now filled with several 1s.
+        // The parts of the buffer that are 1 are not drawn, thus only drawing the objects' size differences,
+        // making it look like borders.
+        glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+        glStencilMask(0x00);
+        glDisable(GL_DEPTH_TEST);
+        shaderSingleColor.use();
+        float scale = 1.1f;
+        // cubes
+        glBindVertexArray(cubeVAO);
+        glBindTexture(GL_TEXTURE_2D, cubeTexture);
         model = glm::mat4(1.0f);
-        // unsigned int modeLoc = glGetUniformLocation(shader.ID, "model");
-        glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+        model = glm::scale(model, glm::vec3(scale, scale, scale));
+        unsigned int modeLocSingleColor = glGetUniformLocation(shaderSingleColor.ID, "model");
+        glUniformMatrix4fv(modeLocSingleColor, 1, GL_FALSE, &model[0][0]);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        model = glm::scale(model, glm::vec3(scale, scale, scale));
+        glUniformMatrix4fv(modeLocSingleColor, 1, GL_FALSE, &model[0][0]);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
+        glStencilMask(0xFF);
+        glStencilFunc(GL_ALWAYS, 0, 0xFF);
+        glEnable(GL_DEPTH_TEST);
 
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);

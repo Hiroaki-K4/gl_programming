@@ -287,7 +287,6 @@ int main() {
         glBindVertexArray(planeVAO);
         glBindTexture(GL_TEXTURE_2D, floorTexture);
         model = glm::mat4(1.0f);
-        // unsigned int modeLoc = glGetUniformLocation(shader.ID, "model");
         glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
