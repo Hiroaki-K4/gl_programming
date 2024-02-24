@@ -1,22 +1,16 @@
-# Blending
-We can try blending.
+# Framebuffers
+We can create post-processing effects by using framebuffers.
 
 ```bash
-cd blending
+cd framebuffers
 make
-./blending
+./framebuffers
 ```
 
-<img src='images/blending.gif' width='600'>
+**Inversion**
 
-<br></br>
+<img src='images/inversion.png' width='600'>
 
-We can render semi-transparent textures.
+**Sharpen kernel**
 
-```bash
-cd transparent
-make
-./transparent
-```
-
-<img src='images/transparent.gif' width='600'>
+<img src='images/sharpen.png' width='600'>

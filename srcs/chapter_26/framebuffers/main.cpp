@@ -218,14 +218,15 @@ int main() {
         -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
         5.0f, -0.5f, -5.0f,  2.0f, 2.0f								
     };
-    float transparentVertices[] = {
-        0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-        0.0f, -0.5f, 0.0f, 0.0f, 1.0f,
-        1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
+    float quadVertices[] = {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
 
-        0.0f, 0.5f, 0.0f, 0.0f, 0.0f,
-        1.0f, -0.5f, 0.0f, 1.0f, 1.0f,
-        1.0f, 0.5f, 0.0f, 1.0f, 0.0f
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        1.0f, -1.0f,  1.0f, 0.0f,
+        1.0f,  1.0f,  1.0f, 1.0f
     };
 
     // cube VAO
@@ -258,36 +259,24 @@ int main() {
     glEnableVertexAttribArray(1);
     glBindVertexArray(0);
 
-    // transparent VAO
-    unsigned int transparentVAO, transparentVBO;
-    glGenVertexArrays(1, &transparentVAO);
-    glGenBuffers(1, &transparentVBO);
-    glBindVertexArray(transparentVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, transparentVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(transparentVertices), transparentVertices, GL_STATIC_DRAW);
+    // screen quad VAO
+    unsigned int quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glBindVertexArray(0);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     // Load texture
-    unsigned int cubeTexture = loadTexture("../../../resources/textures/marble.jpg", true);
+    unsigned int cubeTexture = loadTexture("../../../resources/textures/container.jpg", true);
     unsigned int floorTexture = loadTexture("../../../resources/textures/metal.png", true);
-    unsigned int transparentTexture = loadTexture("../../../resources/textures/grass.png", false);
-
-    // transparent vegetation locations
-    std::vector<glm::vec3> vegetation
-    {
-        glm::vec3(-1.5f, 0.0f, -0.48f),
-        glm::vec3(1.5f, 0.0f, 0.51f),
-        glm::vec3(0.0f, 0.0f, 0.7f),
-        glm::vec3(-0.3f, 0.0f, -2.3f),
-        glm::vec3(0.5f, 0.0f, -0.6f),
-    };
 
     shader.use();
     shader.setInt("texture1", 0);
@@ -325,6 +314,10 @@ int main() {
         // Input
         processInput(window);
 
+        // Bind to framebuffer and draw scene as we normally would to color texture
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glEnable(GL_DEPTH_TEST);
+
         // Render
         // Clear the colorbuffer
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -357,15 +350,6 @@ int main() {
         glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         glBindVertexArray(0);
-        // vegetation
-        glBindVertexArray(transparentVAO);
-        glBindTexture(GL_TEXTURE_2D, transparentTexture);
-        for (unsigned int i = 0; i < vegetation.size(); i++) {
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, vegetation[i]);
-            glUniformMatrix4fv(modeLoc, 1, GL_FALSE, &model[0][0]);
-            glDrawArrays(GL_TRIANGLES, 0, 6);
-        }
 
         // Now bind back to default framebuffer and draw a quad plane with the attached framebuffer color texture
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -374,7 +358,10 @@ int main() {
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // TODO: Add screen shader
+        screenShader.use();
+        glBindVertexArray(quadVAO);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
@@ -384,8 +371,12 @@ int main() {
     // Optional: de-allocate all resources once they've outlived their purpose
     glDeleteVertexArrays(1, &cubeVAO);
     glDeleteVertexArrays(1, &planeVAO);
+    glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &cubeVBO);
     glDeleteBuffers(1, &planeVBO);
+    glDeleteBuffers(1, &quadVBO);
+    glDeleteRenderbuffers(1, &rbo);
+    glDeleteFramebuffers(1, &framebuffer);
 
     glfwTerminate();
 
