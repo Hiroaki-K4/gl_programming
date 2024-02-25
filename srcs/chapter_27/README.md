@@ -1,16 +1,10 @@
-# Framebuffers
-We can create post-processing effects by using framebuffers.
+# Cubemaps
+We can create an entire surrounding environment by using a cubemap texture.
 
 ```bash
-cd framebuffers
+cd cubemaps
 make
-./framebuffers
+./cubemaps
 ```
 
-**Inversion**
-
-<img src='images/inversion.png' width='600'>
-
-**Sharpen kernel**
-
-<img src='images/sharpen.png' width='600'>
+<img src='images/cubemaps.gif' width='600'>

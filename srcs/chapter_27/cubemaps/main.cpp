@@ -146,7 +146,7 @@ unsigned int loadCubemap(std::vector<std::string> faces) {
             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
             stbi_image_free(data);
         } else {
-            std::cout << "Cubempa texture failed to load at path: " << faces[i] << std:endl;
+            std::cout << "Cubempa texture failed to load at path: " << faces[i] << std::endl;
             stbi_image_free(data);
         }
     }
@@ -304,7 +304,6 @@ int main() {
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
-
     glEnable(GL_DEPTH_TEST);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -357,7 +356,18 @@ int main() {
         // Draw skybox as last
         glDepthFunc(GL_LEQUAL);
         skyboxShader.use();
-        // TODO: Add camera matrix
+        view = glm::mat3(glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp)); // Remove translation from the view matrix
+        viewLoc = glGetUniformLocation(skyboxShader.ID, "view");
+        projLoc = glGetUniformLocation(skyboxShader.ID, "projection");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        glUniformMatrix4fv(projLoc, 1, GL_FALSE, &projection[0][0]);
+        // Skybox cube
+        glBindVertexArray(skyboxVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindVertexArray(0);
+        glDepthFunc(GL_LEQUAL);
 
         // Swap buffers and poll IO events
         glfwSwapBuffers(window);
@@ -366,14 +376,9 @@ int main() {
 
     // Optional: de-allocate all resources once they've outlived their purpose
     glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteVertexArrays(1, &planeVAO);
-    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteVertexArrays(1, &skyboxVAO);
     glDeleteBuffers(1, &cubeVBO);
-    glDeleteBuffers(1, &planeVBO);
-    glDeleteBuffers(1, &quadVBO);
-    glDeleteRenderbuffers(1, &rbo);
-    glDeleteFramebuffers(1, &framebuffer);
-
+    glDeleteBuffers(1, &skyboxVBO);
     glfwTerminate();
 
     return 0;
