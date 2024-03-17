@@ -14,7 +14,7 @@
 #include "stb_image.h"
 
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 30.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -162,6 +162,8 @@ int main() {
         return -1;
     }
 
+    glEnable(GL_DEPTH_TEST);
+
     // Build and compile our shader program
     Shader asteroidShader("asteroids.vs", "asteroids.fs", nullptr);
     Shader planetShader("planet.vs", "planet.fs", nullptr);
@@ -169,15 +171,13 @@ int main() {
     // Load models
     Model rock("../../../resources/objects/rock/rock.obj");
     Model planet("../../../resources/objects/planet/planet.obj");
-    std::cout << rock.textures_loaded.size() << std::endl;
-    std::cout << planet.textures_loaded.size() << std::endl;
 
     // Generate a large list of semi-random model transformation matrices
-    unsigned int amount = 1000;
+    unsigned int amount = 30000;
     glm::mat4 *modelMatrices;
     modelMatrices = new glm::mat4[amount];
     srand(static_cast<unsigned int>(glfwGetTime()));
-    float radius = 150.0;
+    float radius = 50.0f;
     float offset = 25.0f;
     for (unsigned int i = 0; i < amount; i++) {
         glm::mat4 model = glm::mat4(1.0f);
